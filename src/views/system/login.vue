@@ -1,0 +1,249 @@
+<template>
+  <div class="container">
+    <div class="box">
+      <div class="login-content-left">
+        <img :src="loginLeftPng" />
+        <div class="login-content-left-mask">
+          <div>{{ systemTitle }}</div>
+          <div>{{ systemSubTitle }}</div>
+        </div>
+      </div>
+
+      <div class="box-inner">
+        <h1>欢迎登录</h1>
+        <el-form class="form">
+          <el-input
+            size="large"
+            v-model="form.name"
+            placeholder="用户名"
+            type="text"
+            maxlength="50"
+          >
+            <template #prepend>
+              <i class="sfont system-xingmingyonghumingnicheng"></i>
+            </template>
+          </el-input>
+          <el-input
+            size="large"
+            ref="password"
+            v-model="form.password"
+            :type="passwordType"
+            placeholder="密码"
+            name="password"
+            maxlength="50"
+          >
+            <template #prepend>
+              <i class="sfont system-mima"></i>
+            </template>
+            <template #append>
+              <el-icon @click="passwordTypeChange">
+                <template v-if="passwordType === 'password'">
+                  <Hide />
+                </template>
+                <template v-else>
+                  <View />
+                </template>
+              </el-icon>
+            </template>
+          </el-input>
+
+          <el-button
+            type="primary"
+            :loading="userStore.loading"
+            @click="submit"
+            style="width: 100%"
+            size="medium"
+          >
+            登录
+          </el-button>
+        </el-form>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script lang="js">
+import { systemTitle, systemSubTitle } from '@/config'
+import { defineComponent, ref, reactive } from 'vue'
+import { useUserStore } from '@/stores/modules/user'
+import loginLeftPng from '@/assets/login/left.jpg'
+import { ElMessage } from 'element-plus'
+
+export default defineComponent({
+  setup() {
+    const userStore = useUserStore()
+    const form = reactive({
+      name: '',
+      password: '',
+    })
+    const passwordType = ref('password')
+
+    const passwordTypeChange = () => {
+      passwordType.value =
+        passwordType.value === 'password' ? 'text' : 'password'
+      console.log(passwordType.value, '打印类型')
+    }
+
+    const checkForm = () => {
+      if (form.name === '') {
+        ElMessage.warning('用户名不能为空')
+        return false
+      }
+      if (form.password === '') {
+        ElMessage.warning('密码不能为空')
+        return false
+      }
+      return true
+    }
+
+    const submit = async () => {
+      if (checkForm()) {
+        try {
+          const token = await userStore.login({
+            name: form.name,
+            password: form.password,
+          })
+          // 登录成功后的处理，比如重定向
+          console.log('登录成功，token:', token)
+        } catch (error) {
+          ElMessage.error('登录失败，请检查用户名和密码')
+        }
+      }
+    }
+
+    return {
+      loginLeftPng,
+      systemTitle,
+      systemSubTitle,
+      form,
+      passwordType,
+      passwordTypeChange,
+      submit,
+      userStore,
+    }
+  },
+})
+</script>
+
+<style lang="scss" scoped>
+.container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: #fff url('@/assets/login/bg.png') no-repeat center;
+  overflow: hidden;
+  background-size: cover;
+  cursor: pointer;
+  user-select: none;
+
+  .box {
+    width: 1160px;
+    display: flex;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    background: white;
+    border-radius: 8px;
+    transform: translate(-50%, -50%);
+    height: 440px;
+    overflow: hidden;
+    box-shadow:
+      0 6px 20px 5px rgba(152, 152, 152, 0.1),
+      0 16px 24px 2px rgba(117, 117, 117, 0.14);
+
+    .login-content-left {
+      position: relative;
+
+      img {
+        height: 440px;
+      }
+
+      .login-content-left-mask {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-image: linear-gradient(
+          rgba(0, 204, 222, 0.8),
+          rgba(51, 132, 224, 0.8)
+        );
+        text-align: center;
+        color: #fff;
+        font-size: 1.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        letter-spacing: 2px;
+
+        div:nth-child(1) {
+          font-size: 3.5rem;
+          margin-bottom: 1em;
+        }
+      }
+    }
+
+    .box-inner {
+      width: 500px;
+
+      h1 {
+        margin-top: 80px;
+        text-align: center;
+      }
+
+      .form {
+        width: 80%;
+        margin: 50px auto 15px;
+
+        .el-input {
+          margin-bottom: 20px;
+        }
+
+        .password-icon {
+          cursor: pointer;
+          color: #409eff;
+        }
+      }
+
+      .fixed-top-right {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 1260px) {
+  .login-content-left {
+    display: none;
+  }
+  .box {
+    width: 500px !important;
+  }
+}
+
+@media screen and (max-width: 750px) {
+  .container .box,
+  .container .box-inner {
+    width: 100vw !important;
+    height: 100vh;
+    box-shadow: none;
+    left: 0;
+    top: 0;
+    transform: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    h1 {
+      margin-top: 0;
+    }
+
+    .form {
+    }
+  }
+}
+</style>
